@@ -1,0 +1,201 @@
+<html>
+<head>
+	<title>MONOSYNTH</title>
+	<script type="text/javascript" src="js/lib/Tone.js"></script>
+	<script type="text/javascript" src="js/lib/Tone.Preset.js"></script>
+</head>
+<body>
+	<button id="stop_sound">Stop</button>
+	<script type="text/javascript">
+			
+		// Code for the FM Synth 
+		var fmSynth = new Tone.FMSynth();
+		fmSynth.setVolume(-10);
+		fmSynth.toMaster();
+
+
+		//MonoSynth Arpeggiator Code 
+		var synth = new Tone.MonoSynth();
+		synth.setVolume(-10);
+		synth.toMaster();
+
+		//Declare oscillator1
+		var oscillator;
+		var sine;
+		var panner;
+		 
+		var i = 0; 
+		var stopArpeggio = false; 
+		var keyNoteForArpeggio = "F#"; 
+		var keyNoteForArpeggio2 = "C";
+		var oscillatorFreq = 120; 
+		var oscillatorFreq2 = 60; 
+		var keyNotesArray = [];
+
+		function getArpeggioNotes(keyNote, keyNoteArrayElement) { 
+			switch (keyNote) {
+			    case "C":
+			        keyNotesArray = ["C5", "E5", "G5"];
+			        break;
+			    case "G":
+			        keyNotesArray = ["G5", "B5", "D5"];
+			        break;
+			    case "D":
+			        keyNotesArray = ["D5", "F#5", "A5"];
+			        break;
+			    case "A":
+			        keyNotesArray = ["A5", "C#5", "E5"];
+			        break;
+			    case "E":
+			        keyNotesArray = ["E5", "G#5", "B5"];
+			        break;
+			    case "B":
+			        keyNotesArray = ["B5", "D#5", "F#5"];
+			        break;
+			    case "F#":
+			        keyNotesArray = ["F#5", "A#5", "C#5"];
+			        break;
+			    case "F":
+			    	keyNotesArray = ["F5", "A5", "C5"];
+			    	break;
+			}
+			note = keyNotesArray[keyNoteArrayElement];
+			return note; 
+		}
+
+// Normal Arpeggios 
+//Chord Notes 
+// C	C,E,G
+// G	G,B,D
+// D	D,F#,A
+// A	A,C#,E
+// E	E,G#,B
+// B	B,D#,F#
+// F#	F#,A#,C#
+// C#	C#,E#,G#
+ 	 
+// F	F,A,C
+// Bb	Bb,D,F
+// Eb	Eb,G,Bb
+// Ab	Ab,C,Eb
+// Db	Db,F,Ab
+// Gb	Gb,Bb,Db
+// Cb	Cb,Eb,Gb
+		// var intervalID = setInterval(function(){
+		// 	synth.triggerAttackRelease(getArpeggioNotes(keyNoteForArpeggio, i));
+		// 	fmSynth.triggerAttackRelease(getArpeggioNotes(keyNoteForArpeggio2, i), 2);
+
+		// 	if (i == (keyNotesArray.length - 1)){
+		// 		i = 0;
+		// 	}
+		// 	else{
+		// 		i = i + 1;
+		// 	}
+		// }, 2500);
+
+
+		// //Code for the oscillator
+		// var oscillatorIntervalID = setInterval(function(){
+		// 	oscillator = new Tone.Oscillator(oscillatorFreq, "sine");
+		// 	oscillator.setFrequency(oscillatorFreq, 5000)
+		// 	oscillator.setVolume(-30);
+		// 	oscillator.toMaster();
+			
+		// 	var vibrato = new Tone.LFO(6, -25, 25);
+		// 	vibrato.connect(oscillator.detune);
+			
+		// 	oscillator.start();
+		// 	vibrato.start();
+
+		// 	oscillatorFreq = oscillatorFreq + 20;
+		// 	console.log("The oscillatorFreq is " + oscillatorFreq);
+		// 	if (oscillatorFreq > 500){
+		// 		oscillatorFreq = 20; 
+		// 	}
+
+		// }, 10000);
+
+		// //Code for the second oscillator
+		// var oscillatorIntervalID = setInterval(function(){
+		// 	//Code for AutoPanner
+		// 	//panner	
+		// 	panner = new Tone.AutoPanner();
+		// 	//input signals
+		// 	sine = new Tone.Oscillator();
+		// 	//connect it up
+		// 	sine.connect(panner);
+		// 	sine.setVolume(-30);
+		// 	panner.toMaster();
+		// 	//set the initial values
+		// 	panner.setDry(10);
+		// 	panner.setWet(80);
+		// 	panner.setFrequency(oscillatorFreq2);
+		// 	sine.start();
+		// 	panner.start();
+
+		// 	oscillatorFreq2 = oscillatorFreq2 + 10;
+		// 	console.log("The oscillatorFreq2 is " + oscillatorFreq2);
+		// 	if (oscillatorFreq2 > 250){
+		// 		oscillatorFreq2 = 20; 
+		// 	}
+
+		// }, 5000);
+
+		//Code for the keyboard
+		var keys = new Tone.PolySynth(3, Tone.MonoSynth, Tone.MonoSynth.prototype.preset.Pianoetta);
+		keys.setVolume(-30);
+		keys.toMaster();			
+
+		//Code for the distortion guitar
+		var distguitar = new Tone.PolySynth(3, Tone.MonoSynth, Tone.MonoSynth.prototype.preset.DistGit);
+		distguitar.setVolume(-30);
+		distguitar.toMaster();
+
+
+		var Score = {
+			"distguitar" : [["0:0", "C2", "2n"], ["0:3:2", "D3", "8n"]],
+			"keys" : [["0:0:2", ["E4", "G4", "A4"]], ["0:0:3", ["E4", "F4", "A4"]], ["0:1:3", ["E4", "G4", "B4"]]],
+		};
+		//create events for all of the notes
+		Tone.Note.parseScore(Score);
+
+		//route the note channels
+		Tone.Note.route("distguitar", function(time, note, duration){
+			distguitar.triggerAttackRelease(note, duration, time);
+		});
+		Tone.Note.route("keys", function(time, value){
+			var velocity = Math.random() * 0.5 + 0.4;
+			for (var i = 0; i < value.length; i++) {
+				keys.triggerAttackRelease(value[i], "16n", time, velocity);
+			}
+		});
+
+		//setup the transport looping
+		Tone.Transport.setLoopStart(0);
+		Tone.Transport.setLoopEnd("1:0");
+		Tone.Transport.loop = true;
+		Tone.Transport.setBpm(100);
+		Tone.Transport.start();
+
+		//Button to Stop sound
+		var btn = document.querySelector('#stop_sound');
+		btn.addEventListener('click',stopSound,true);
+
+		function stopSound(){			
+			Tone.Transport.stop();
+			clearInterval(intervalID);
+			synth.triggerRelease(5);
+			fmSynth.triggerRelease(10);
+			oscillator.dispose();
+			oscillator.stop();
+			vibrato.stop();
+			sine.stop();
+			panner.disconnect();
+			panner.stop();
+		}
+
+	</script>
+</body>
+</html>
+
+
